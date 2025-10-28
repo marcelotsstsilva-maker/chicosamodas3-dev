@@ -159,7 +159,7 @@ async function cadastrarVenda(req, res) {
       await conn.query(
         `INSERT INTO caixa (tipo, origem, descricao, valor, data_movimento, idvenda)
          VALUES ('entrada', 'venda', ?, ?, NOW(), ?)`,
-        [`Venda ID ${idvenda}`, totalFinal, idvenda]
+        [`Venda ID ${idvenda}`, lucro_liquido, idvenda]
       );
     }
 
