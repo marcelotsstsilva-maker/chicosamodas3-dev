@@ -2,17 +2,44 @@ import express from "express";
 import multer from "multer";
 import fs from "fs";
 import path from "path";
+import https from "https";
 
 const router = express.Router();
 
 // ======================================================
 // 🗂️ Configurações de pasta e versão
 // ======================================================
-const uploadDir = path.join(process.cwd(), "uploads");
+const uploadDir = path.resolve("./uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
 const versaoBanco = 5; // ⬅️ número da versão atual do banco
 const nomeBanco = `loja_v${versaoBanco}.db`; // ⬅️ nome do arquivo de banco
+const bancoPath = path.join(uploadDir, nomeBanco);
+
+// ======================================================
+// 📥 Baixar banco do GitHub automaticamente (caso não exista)
+// ======================================================
+if (!fs.existsSync(bancoPath)) {
+  console.log("⚠️ Banco não encontrado localmente. Baixando do GitHub...");
+
+  const url = "https://raw.githubusercontent.com/SEU_USUARIO/seu-repo/main/backend-loja/uploads/loja_v5.db"; 
+  // ⬆️ substitua pelo link bruto correto do seu GitHub
+
+  const file = fs.createWriteStream(bancoPath);
+  https.get(url, (response) => {
+    if (response.statusCode === 200) {
+      response.pipe(file);
+      file.on("finish", () => {
+        file.close();
+        console.log("✅ Banco baixado com sucesso para:", bancoPath);
+      });
+    } else {
+      console.error("❌ Falha ao baixar banco. Status:", response.statusCode);
+    }
+  }).on("error", (err) => {
+    console.error("❌ Erro ao tentar baixar banco:", err.message);
+  });
+}
 
 // ======================================================
 // 💾 Configurar armazenamento do Multer
@@ -35,12 +62,11 @@ router.post("/enviar", upload.single("file"), (req, res) => {
 // 📥 Baixar banco do servidor → app
 // ======================================================
 router.get("/baixar", (req, res) => {
-  const bancoPath = path.join(uploadDir, nomeBanco);
   if (!fs.existsSync(bancoPath)) {
     return res.status(404).json({ error: "Banco ainda não disponível" });
   }
   console.log("📤 Enviando banco para o app...");
-  res.download(bancoPath, "loja.db"); // o app sempre recebe como loja.db
+  res.download(bancoPath, "loja.db");
 });
 
 // ======================================================
@@ -50,8 +76,8 @@ router.get("/versao", (req, res) => {
   res.json({
     versao: versaoBanco,
     arquivo: nomeBanco,
-    atualizadoEm: fs.existsSync(path.join(uploadDir, nomeBanco))
-      ? fs.statSync(path.join(uploadDir, nomeBanco)).mtime
+    atualizadoEm: fs.existsSync(bancoPath)
+      ? fs.statSync(bancoPath).mtime
       : null
   });
 });
