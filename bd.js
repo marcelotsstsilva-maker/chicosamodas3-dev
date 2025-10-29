@@ -2,11 +2,11 @@
 import mysql from "mysql2/promise";
 
 export const pool = mysql.createPool({
-  host: "btb6hubdqebszllhbb0i-mysql.services.clever-cloud.com",
+  host: "btrjdgtvkjxwwdhabaxu-mysql.services.clever-cloud.com",
   port: 3306,
-  user: "uiqndzvfm7plxdsd",
-  password: "ibJgywnXeNv2OVOZrnhB",
-  database: "btb6hubdqebszllhbb0i",
+  user: "ugqdqh8g9q15zwfr",
+  password: "qimE9z4Wbqs13i7Q2PS8",
+  database: "btrjdgtvkjxwwdhabaxu",
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
